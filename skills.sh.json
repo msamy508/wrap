@@ -1,0 +1,10 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "groupings": [
+    {
+      "title": "Session handoff",
+      "description": "End a coding session at a milestone with STATE.md, then start the next session from it.",
+      "skills": ["wrap", "handoff"]
+    }
+  ]
+}

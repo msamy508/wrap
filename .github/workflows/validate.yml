@@ -1,0 +1,35 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: skills CLI finds both skills
+        run: |
+          out="$(npx -y skills add . --list 2>&1)"
+          echo "$out"
+          echo "$out" | grep -q 'wrap' && echo "$out" | grep -q 'handoff'
+      - name: Claude Code plugin and marketplace manifests are valid
+        run: npx -y @anthropic-ai/claude-code plugin validate . --strict
+      - name: versions agree
+        run: |
+          v=$(node -p "require('./.claude-plugin/plugin.json').version")
+          m=$(node -p "require('./.claude-plugin/marketplace.json').plugins[0].version")
+          test "$v" = "$m"
+          grep -q "version: $v" skills/wrap/SKILL.md
+          grep -q "version: $v" skills/handoff/SKILL.md
+          echo "all at $v"

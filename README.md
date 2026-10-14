@@ -1,115 +1,197 @@
 # wrap
 
-`/wrap` ends a Claude Code session at a milestone. `/handoff` starts the next one from where it stopped.
+[![validate](https://img.shields.io/github/actions/workflow/status/msamy508/wrap/validate.yml?branch=main&label=validate)](https://github.com/msamy508/wrap/actions/workflows/validate.yml)
+[![skills.sh](https://www.skills.sh/b/msamy508/wrap)](https://www.skills.sh/msamy508/wrap)
+[![License](https://img.shields.io/github/license/msamy508/wrap)](LICENSE)
 
-Long agent sessions drift: context gets compacted, decisions get lost, and the next session spends its first hour re-deriving what the last one knew. `/wrap` closes the session on purpose. It writes the current state to `STATE.md`, lists uncommitted work, keeps secrets out of that file, and tells you the one next action.
+**End the session at a milestone. Start the next one where it stopped.**
 
-Claude does not load `STATE.md` by itself. In the next session, type `/handoff`, or paste: "Read STATE.md and continue".
+Long agent sessions drift: context gets compacted, decisions get lost, and the next session spends
+its first hour re-deriving what the last one knew. `/wrap` closes the session on purpose. It writes
+the current state to `STATE.md`, lists uncommitted work, keeps secrets out of that file, and names
+the one next action. `/handoff` reads it in the next session, reports what changed since, and does
+that action.
 
-## What's in the repo
-
+```bash
+npx skills add msamy508/wrap
 ```
-skills/wrap/            /wrap as a skill (SKILL.md + a STATE.md template and example)
-skills/handoff/         /handoff as a skill
-commands/wrap.md        /wrap as a plain command file
-commands/handoff.md     /handoff as a plain command file
+
+Then, at the end of a session:
+
+```text
+/wrap
+/wrap focus on the migration decision
 ```
+
+And in the next one:
+
+```text
+/handoff
+```
+
+```mermaid
+flowchart LR
+  A["Session 1<br/>work"] --> W["/wrap<br/>milestone check"]
+  W --> S["STATE.md<br/>focus · next action · decisions<br/>failed approaches · verification · commit"]
+  S --> H["/handoff<br/>(session 2)"]
+  H --> D["drift check<br/>commits since the wrap"]
+  D --> N["do the next action<br/>only that"]
+```
+
+## The two skills
+
+| Skill | Job |
+| --- | --- |
+| [`wrap`](skills/wrap/SKILL.md) | Check the session is at a milestone, update one `STATE.md`, list uncommitted files, run an installed secrets scanner on it, and close with the single next action. Never pushes. |
+| [`handoff`](skills/handoff/SKILL.md) | Find `STATE.md`, read it before the code, compare its recorded commit with the checkout, report the focus, blockers and drift, then do the next action and only that. Never edits `STATE.md`. |
 
 ## Install
 
-For `/wrap`, install either the skill or the command file, not both. Do the same for `/handoff`. Command files are the older format; they still work.
+You need [Claude Code](https://code.claude.com/docs/en/quickstart). Pick **one** way per machine;
+installing the same skill twice gives you two copies with the same name.
 
-You need [Claude Code](https://code.claude.com/docs/en/quickstart).
+**Skills CLI** (Node.js). The [skills](https://github.com/vercel-labs/skills) CLI copies the skills
+into Claude Code or any other agent it supports:
 
-**One command (skills).** With Node.js installed, the [skills](https://github.com/vercel-labs/skills) CLI copies both skills into your agent:
+```bash
+npx skills add msamy508/wrap --list
+npx skills add msamy508/wrap
+npx skills add msamy508/wrap --skill '*' --agent claude-code --global --yes
+```
 
-    npx skills add msamy508/wrap
+Pin a release by appending its tag, for example `npx skills add msamy508/wrap@v0.1.0`. The CLI
+installs by git tag, not by `metadata.version` in `SKILL.md`.
 
-It asks which skills and which agents. To install both for Claude Code, for all your projects, without prompts:
+Update or remove (use `-g` if you installed with `--global`):
 
-    npx skills add msamy508/wrap --skill '*' --agent claude-code --global --yes
+```bash
+npx skills update wrap handoff -g -y
+npx skills remove wrap handoff -g
+```
 
-See what it would install first with `npx skills add msamy508/wrap --list`.
+**Claude Code plugin.** Inside Claude Code (2.1.275 or later):
 
-**Update.** Pull the latest version of both skills (use `-g` if you installed with `--global`, leave it out for a project install):
+```text
+/plugin install wrap --marketplace msamy508/wrap
+```
 
-    npx skills update wrap handoff -g -y
+On older versions, add the marketplace first, then install:
 
-To remove them: `npx skills remove wrap handoff -g`. If you installed by copying files, copy them again from the latest version of this repo.
+```text
+/plugin marketplace add msamy508/wrap
+/plugin install wrap@wrap
+```
 
-**Commands (manual).** Copy `commands/wrap.md` and `commands/handoff.md` to one of:
+Plugin skills are namespaced: type `/wrap:wrap` and `/wrap:handoff`. To update, refresh the
+marketplace and then the plugin, and restart Claude Code:
 
-- macOS or Linux, all projects: `~/.claude/commands/`
-- Windows, all projects: `%USERPROFILE%\.claude\commands\`
-- one repository, shared with your team: `.claude/commands/`
+```bash
+claude plugin marketplace update wrap
+claude plugin update wrap@wrap
+```
 
-Start a new Claude Code session afterward. Command files run only when you type them; Claude never starts a wrap on its own.
+**Manual copy.** Copy the `skills/wrap` and `skills/handoff` folders to `~/.claude/skills/`
+(Windows: `%USERPROFILE%\.claude\skills\`), or to `.claude/skills/` in one repository. Keep the folder
+names; they must match `name` in `SKILL.md`. If you created the skills folder during a session, run
+`/reload-skills`.
 
-**Skills (manual).** Copy the `skills/wrap` and `skills/handoff` folders (each contains a `SKILL.md`) to one of:
+Prefer plain command files? Copy `commands/wrap.md` and `commands/handoff.md` to
+`~/.claude/commands/` or `.claude/commands/`. They run only when you type them; Claude never starts
+a wrap on its own. A skill wins over a command file of the same name, so install one or the other.
 
-- macOS or Linux, all projects: `~/.claude/skills/`
-- Windows, all projects: `%USERPROFILE%\.claude\skills\`
-- one repository: `.claude/skills/`
+**claude.ai.** Upload makes the skills available in the Claude apps; it does not replace the Claude
+Code install.
 
-The folder name must stay `wrap` / `handoff`, matching `name` in `SKILL.md`. If you created the skills folder during a session, run `/reload-skills`. As skills, Claude may also start them when you say "close the session" or "continue from STATE.md".
+- Free, Pro, and Max: turn on **Code execution and file creation** under **Settings > Capabilities**,
+  then open **Customize > Skills**, choose **+**, **Create skill**, **Upload a skill**.
+- Team and Enterprise: an owner enables Code execution and Skills under
+  **Organization settings > Plugins & skills** if they are off.
 
-**claude.ai.** Uploading to claude.ai does not replace the Claude Code install; it makes the skills available in the Claude apps.
+Zip each skill folder from `skills/`, so the archive holds `wrap/SKILL.md`, not `SKILL.md` at its
+root:
 
-- Free, Pro, and Max: turn on **Code execution and file creation** under **Settings > Capabilities**, then open **Customize > Skills**, choose **+**, then **Create skill**, then **Upload a skill**.
-- Team: Skills are on by default. Team and Enterprise: if they are off, an owner enables Code execution and Skills under **Organization settings > Plugins & skills** (Policy tab). Members then use **Customize > Skills**.
+```bash
+cd skills && zip -r ../wrap.zip wrap/ && zip -r ../handoff.zip handoff/ && cd ..
+```
 
-Zip each skill folder from its parent (`skills/`), so the archive contains `wrap/SKILL.md` or `handoff/SKILL.md`. An archive with `SKILL.md` at its root is rejected.
+On Windows, use the built-in `tar` (it writes the forward-slash paths the uploader expects; call
+`C:\Windows\System32\tar.exe` if another `tar` comes first on PATH):
 
-macOS or Linux, from this repo's root:
+```powershell
+tar.exe -a -c -f wrap.zip -C skills wrap
+tar.exe -a -c -f handoff.zip -C skills handoff
+```
 
-    cd skills && zip -r ../wrap.zip wrap/ && zip -r ../handoff.zip handoff/ && cd ..
+On claude.ai there is no git checkout unless that chat has the project files and code execution, so
+the commit line reads "no git" and the secrets step reports that no scanner was found.
 
-Windows (PowerShell or cmd), from this repo's root. Use the Windows `tar`, which writes the forward-slash paths the uploader expects (if `tar` resolves to another build, call `C:\Windows\System32\tar.exe`):
+## What `/wrap` does
 
-    tar.exe -a -c -f wrap.zip -C skills wrap
-    tar.exe -a -c -f handoff.zip -C skills handoff
+1. **Milestone check.** States what was completed, decided, and mid-flight. If stopping would
+   break something, it asks and waits.
+2. **One `STATE.md`.** The package you worked in, else the current directory. An existing file keeps
+   its headings. A new one uses [the template](skills/wrap/assets/STATE.template.md)
+   ([filled example](skills/wrap/assets/STATE.example.md)). It records:
+   - the commit and branch it was written at;
+   - each completed item tagged `[verified]` (a command in this session checked it) or `[unverified]`;
+   - **Failed approaches**, so the next session does not retry them;
+   - **Verification**: the check commands this session ran, with date and last result.
 
-Check the archive before uploading: its entries must start with `wrap/` or `handoff/`.
+   It stays under about 150 lines; older entries move to `STATE.archive.md`.
+3. **Loose ends.** Lists uncommitted paths from `git status --porcelain`. Commits only if you ask in
+   that same turn, only the files you confirm, without git hooks. Never amends or pushes.
+4. **Secrets.** Never writes tokens, passwords, keys or personal data into `STATE.md`. Runs
+   `gitleaks`, `trufflehog` or `detect-secrets` on it only if one is already installed.
+5. **Close.** One short block in your language: milestone, path, what is uncommitted, the next
+   action, and what to type next time.
 
-On claude.ai the skill has no git checkout unless that chat already has the project files and code execution. The secrets step then reports that no scanner was found.
-
-## Use
-
-    /wrap
-    /wrap focus on the migration decision
-    /handoff
-
-A good close looks like this:
+A good close:
 
 > Wrap done. Milestone: Parquet writer matches the CSV output (212 tests pass).
 > STATE.md updated (`./STATE.md`). Uncommitted: `export/parquet_writer.py`, `tests/test_parquet_writer.py`. No secrets scanner found.
 > Next action: run `make nightly-dry` and compare row counts.
 > This session can be closed. Next time: `/handoff`.
 
-## What `/wrap` does
-
-1. States the milestone. If something would break by stopping, it asks and waits.
-2. Picks one `STATE.md` (the package you worked in, else the current directory) and updates it. An existing file keeps its headings; the six-section shape in `skills/wrap/assets/STATE.template.md` is used only when the file is missing. It keeps the file under about 150 lines by moving old entries to `STATE.archive.md`.
-3. Lists uncommitted paths from `git status --porcelain`. It never amends or pushes. It commits only if you explicitly ask in that same turn, only the files you confirm, without running git hooks, and never pushes. Without git it says so and still writes `STATE.md`.
-4. Never writes tokens, passwords, keys or personal data into `STATE.md`. Runs gitleaks, trufflehog or detect-secrets on `STATE.md` only if one is already installed on your machine; it never runs scripts from the repository or git hooks.
-5. Closes in one short block, in your language, with the single next action.
-
-It does not start new work after the wrap.
-
 ## What `/handoff` does
 
-Finds the `STATE.md`, reads it before exploring the code, tells you the focus, the next action and anything blocking it, and then does that one action. If a decision or a step in Waiting blocks it, it stops and asks. It never edits `STATE.md`; the next `/wrap` does.
+Finds `STATE.md` and reads it before exploring the code. If it records a commit, it lists the
+commits and uncommitted changes since then, and treats whatever they touch as unverified. It tells
+you the focus, the next action, any blocking decision, and what changed; then does that one action.
+It does not retry anything under Failed approaches unless you ask.
 
-It is not Claude Code's built-in `/resume`, which reopens an earlier conversation. Use both: `/resume` brings back a chat, `/handoff` brings back the work.
+It is not Claude Code's built-in `/resume`, which reopens an earlier conversation. `/resume` brings
+back a chat; `/handoff` brings back the work.
+
+## Requirements
+
+- Claude Code (or another agent the Skills CLI supports) in a project directory.
+- `git` for the uncommitted list and the drift check; without it, both say "no git".
+- Optional: `gitleaks`, `trufflehog` or `detect-secrets` on PATH for the secrets check.
+
+## Trust and validation
+
+- Markdown only. No scripts, no dependencies, no network calls, no telemetry.
+- The skills run `git status`, `git rev-parse`, `git branch` and `git log`, and only a secrets
+  scanner you already installed. They never run scripts or binaries from your repository, never
+  run git hooks, and never push.
+- `/wrap` never edits your settings, `CLAUDE.md`, or any file other than `STATE.md` and
+  `STATE.archive.md`.
+- Every push runs [validate](.github/workflows/validate.yml): the Skills CLI must list both skills,
+  the plugin and marketplace manifests must pass `claude plugin validate --strict`, and every version
+  number must agree.
 
 ## Before you rely on it
 
-- A skill wins over a command file of the same name. A personal skill wins over a project skill, and an enterprise skill wins over both. Install the copy you want to run.
-- `STATE.md` is meant to be read by the next session and often by teammates. Commit it if your team wants a shared handover; add it to `.gitignore` if it is personal.
+- `STATE.md` is read by the next session and often by teammates. Commit it for a shared handover, or
+  add it to `.gitignore` if it is personal.
+- Other skills are also named `handoff`. If two are installed, the plugin namespace
+  (`/wrap:handoff`) tells them apart.
 
 ## Optional hook
 
-Remind each new or resumed session to read `STATE.md`. Claude Code adds the text a `SessionStart` hook prints to Claude's context. Merge this into the `hooks` object in `~/.claude/settings.json` or `.claude/settings.json`; do not replace the whole file. `/wrap` never edits your settings. The `echo` command works in `sh`, Git Bash and PowerShell.
+Remind each new or resumed session to read `STATE.md`. Claude Code adds what a `SessionStart` hook
+prints to Claude's context. Merge this into the `hooks` object in `~/.claude/settings.json` or
+`.claude/settings.json`; do not replace the whole file.
 
 ```json
 {
@@ -123,6 +205,28 @@ Remind each new or resumed session to read `STATE.md`. Claude Code adds the text
   }
 }
 ```
+
+## Repository shape
+
+```text
+.claude-plugin/
+├── plugin.json          Claude Code plugin manifest (skills only)
+└── marketplace.json     lets /plugin install from this repo
+skills/
+├── wrap/
+│   ├── SKILL.md
+│   └── assets/
+│       ├── STATE.template.md
+│       └── STATE.example.md
+└── handoff/
+    └── SKILL.md
+commands/
+├── wrap.md              same steps as a plain command file
+└── handoff.md
+skills.sh.json           grouping for skills.sh
+```
+
+Contributing? Read [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) first.
 
 ## License
 

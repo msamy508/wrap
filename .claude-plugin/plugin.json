@@ -1,0 +1,24 @@
+{
+  "name": "wrap",
+  "version": "0.1.0",
+  "description": "End a Claude Code session at a milestone with /wrap (writes STATE.md), and start the next one from it with /handoff.",
+  "author": {
+    "name": "msamy508",
+    "url": "https://github.com/msamy508"
+  },
+  "homepage": "https://github.com/msamy508/wrap",
+  "repository": "https://github.com/msamy508/wrap",
+  "license": "MIT",
+  "keywords": [
+    "session",
+    "handoff",
+    "state",
+    "context",
+    "wrap"
+  ],
+  "skills": [
+    "./skills/wrap",
+    "./skills/handoff"
+  ],
+  "commands": []
+}

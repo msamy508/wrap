@@ -2,6 +2,7 @@
 
 Read this first. It is the current state of the work, not its history.
 Updated: YYYY-MM-DD
+Commit: <short hash> on <branch> (or "no git")
 
 ## Current focus
 
@@ -9,7 +10,7 @@ Updated: YYYY-MM-DD
 
 ## Last completed
 
-- YYYY-MM-DD: <what finished, and where it lives>
+- YYYY-MM-DD: <what finished, and where it lives> [verified] or [unverified]
 
 ## Next action
 
@@ -22,6 +23,14 @@ Updated: YYYY-MM-DD
 ## Do not re-derive
 
 - <a fact that was corrected or learned, and why it matters>
+
+## Failed approaches
+
+- <what was tried, why it failed, and what not to repeat>
+
+## Verification
+
+- `<command>` · YYYY-MM-DD: <result, e.g. "212 passed">
 
 ## Waiting
 

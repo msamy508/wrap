@@ -7,6 +7,8 @@ description: >-
   function, wrapping text, finishing one task, or any request to keep working.
 license: MIT
 compatibility: Claude Code in a project directory. Uses git when the folder is a repository. On claude.ai, needs code execution and the project files.
+metadata:
+  version: 0.1.0
 ---
 
 Wrap this session. Long sessions drift: context gets compacted, decisions get
@@ -40,6 +42,23 @@ carry forward.
    the template.
    If you create it, copy `assets/STATE.template.md` (keep the headings in
    English); `assets/STATE.example.md` shows a filled file.
+
+   In a new or existing file, keep these current:
+   - **Commit line.** Under `Updated:`, write `Commit: <short hash> on
+     <branch>` from `git rev-parse --short HEAD` and `git branch
+     --show-current`, or `Commit: no git`. The next `/handoff` compares it
+     with the checkout to see what changed since the wrap.
+   - **Verified or not.** End each new "Last completed" entry with
+     `[verified]` if a command run in this session checked it (a test, a
+     build, a query, reading the produced file), otherwise `[unverified]`.
+     Do not run new commands just to earn the tag.
+   - **Failed approaches.** Add what this session tried that did not work,
+     why, and what not to repeat. Keep earlier entries while they still apply.
+   - **Verification.** The check commands this session ran, each with its
+     date and last result. Do not rerun them for the wrap. A check not run
+     this session keeps its old date and result.
+   If the file has no Failed approaches or Verification section and there is
+   something to record, add the section just before Waiting.
 
    Keep the file under about 150 lines. If it would grow past that, move the
    oldest "Last completed" entries into `STATE.archive.md` beside it (newest

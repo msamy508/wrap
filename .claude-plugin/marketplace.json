@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "wrap",
+  "description": "Session handoff skills for Claude Code: /wrap and /handoff.",
+  "owner": { "name": "msamy508", "url": "https://github.com/msamy508" },
+  "plugins": [
+    {
+      "name": "wrap",
+      "description": "End a Claude Code session at a milestone with /wrap (writes STATE.md), and start the next one from it with /handoff.",
+      "source": "./",
+      "version": "0.1.0",
+      "category": "productivity",
+      "tags": ["session", "handoff", "state"]
+    }
+  ]
+}

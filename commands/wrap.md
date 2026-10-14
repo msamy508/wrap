@@ -34,13 +34,32 @@ Treat it as what matters most to carry forward.
    when the file has nowhere to put that fact. Do not replace the file with
    the template.
    If you create it, use these sections, in English:
-   - A line `Updated: YYYY-MM-DD`.
+   - A line `Updated: YYYY-MM-DD` and a line `Commit: <hash> on <branch>`.
    - **Current focus**: one or two lines.
    - **Last completed**: what finished, with today's date.
    - **Next action**: the single first step for the next session.
    - **Open decisions**: what waits on the user, with any defaults.
    - **Do not re-derive**: facts corrected or learned this session.
+   - **Failed approaches**: what was tried and did not work.
+   - **Verification**: check commands with their date and last result.
    - **Waiting**: one bullet `Uncommitted:` and one bullet `For the user:`.
+
+   In a new or existing file, keep these current:
+   - **Commit line.** Under `Updated:`, write `Commit: <short hash> on
+     <branch>` from `git rev-parse --short HEAD` and `git branch
+     --show-current`, or `Commit: no git`. The next `/handoff` compares it
+     with the checkout to see what changed since the wrap.
+   - **Verified or not.** End each new "Last completed" entry with
+     `[verified]` if a command run in this session checked it (a test, a
+     build, a query, reading the produced file), otherwise `[unverified]`.
+     Do not run new commands just to earn the tag.
+   - **Failed approaches.** Add what this session tried that did not work,
+     why, and what not to repeat. Keep earlier entries while they still apply.
+   - **Verification.** The check commands this session ran, each with its
+     date and last result. Do not rerun them for the wrap. A check not run
+     this session keeps its old date and result.
+   If the file has no Failed approaches or Verification section and there is
+   something to record, add the section just before Waiting.
 
    Keep the file under about 150 lines. If it would grow past that, move the
    oldest "Last completed" entries into `STATE.archive.md` beside it (newest
