@@ -9,19 +9,35 @@ Claude does not load `STATE.md` by itself. In the next session, type `/handoff`,
 ## What's in the repo
 
 ```
-commands/wrap.md      /wrap as a command file
-commands/handoff.md   /handoff as a command file
-wrap/                 /wrap as a skill folder (SKILL.md + a STATE.md template and example)
-handoff/              /handoff as a skill folder
+skills/wrap/            /wrap as a skill (SKILL.md + a STATE.md template and example)
+skills/handoff/         /handoff as a skill
+commands/wrap.md        /wrap as a plain command file
+commands/handoff.md     /handoff as a plain command file
 ```
 
 ## Install
 
-For `/wrap`, install either the command file or the `wrap/` skill, not both. Do the same for `/handoff`. Command files are the older format; they still work.
+For `/wrap`, install either the skill or the command file, not both. Do the same for `/handoff`. Command files are the older format; they still work.
 
 You need [Claude Code](https://code.claude.com/docs/en/quickstart).
 
-**Commands (simplest).** Copy `commands/wrap.md` and `commands/handoff.md` to one of:
+**One command (skills).** With Node.js installed, the [skills](https://github.com/vercel-labs/skills) CLI copies both skills into your agent:
+
+    npx skills add msamy508/wrap
+
+It asks which skills and which agents. To install both for Claude Code, for all your projects, without prompts:
+
+    npx skills add msamy508/wrap --skill '*' --agent claude-code --global --yes
+
+See what it would install first with `npx skills add msamy508/wrap --list`.
+
+**Update.** Pull the latest version of both skills (use `-g` if you installed with `--global`, leave it out for a project install):
+
+    npx skills update wrap handoff -g -y
+
+To remove them: `npx skills remove wrap handoff -g`. If you installed by copying files, copy them again from the latest version of this repo.
+
+**Commands (manual).** Copy `commands/wrap.md` and `commands/handoff.md` to one of:
 
 - macOS or Linux, all projects: `~/.claude/commands/`
 - Windows, all projects: `%USERPROFILE%\.claude\commands\`
@@ -29,7 +45,7 @@ You need [Claude Code](https://code.claude.com/docs/en/quickstart).
 
 Start a new Claude Code session afterward. Command files run only when you type them; Claude never starts a wrap on its own.
 
-**Skills.** Copy the `wrap` and `handoff` folders (each contains a `SKILL.md`) to one of:
+**Skills (manual).** Copy the `skills/wrap` and `skills/handoff` folders (each contains a `SKILL.md`) to one of:
 
 - macOS or Linux, all projects: `~/.claude/skills/`
 - Windows, all projects: `%USERPROFILE%\.claude\skills\`
@@ -42,17 +58,16 @@ The folder name must stay `wrap` / `handoff`, matching `name` in `SKILL.md`. If 
 - Free, Pro, and Max: turn on **Code execution and file creation** under **Settings > Capabilities**, then open **Customize > Skills**, choose **+**, then **Create skill**, then **Upload a skill**.
 - Team: Skills are on by default. Team and Enterprise: if they are off, an owner enables Code execution and Skills under **Organization settings > Plugins & skills** (Policy tab). Members then use **Customize > Skills**.
 
-Zip each skill folder from its parent, so the archive contains `wrap/SKILL.md` or `handoff/SKILL.md`. An archive with `SKILL.md` at its root is rejected.
+Zip each skill folder from its parent (`skills/`), so the archive contains `wrap/SKILL.md` or `handoff/SKILL.md`. An archive with `SKILL.md` at its root is rejected.
 
 macOS or Linux, from this repo's root:
 
-    zip -r wrap.zip wrap/
-    zip -r handoff.zip handoff/
+    cd skills && zip -r ../wrap.zip wrap/ && zip -r ../handoff.zip handoff/ && cd ..
 
 Windows (PowerShell or cmd), from this repo's root. Use the Windows `tar`, which writes the forward-slash paths the uploader expects (if `tar` resolves to another build, call `C:\Windows\System32\tar.exe`):
 
-    tar.exe -a -c -f wrap.zip wrap
-    tar.exe -a -c -f handoff.zip handoff
+    tar.exe -a -c -f wrap.zip -C skills wrap
+    tar.exe -a -c -f handoff.zip -C skills handoff
 
 Check the archive before uploading: its entries must start with `wrap/` or `handoff/`.
 
@@ -74,7 +89,7 @@ A good close looks like this:
 ## What `/wrap` does
 
 1. States the milestone. If something would break by stopping, it asks and waits.
-2. Picks one `STATE.md` (the package you worked in, else the current directory) and updates it. An existing file keeps its headings; the six-section shape in `wrap/assets/STATE.template.md` is used only when the file is missing. It keeps the file under about 150 lines by moving old entries to `STATE.archive.md`.
+2. Picks one `STATE.md` (the package you worked in, else the current directory) and updates it. An existing file keeps its headings; the six-section shape in `skills/wrap/assets/STATE.template.md` is used only when the file is missing. It keeps the file under about 150 lines by moving old entries to `STATE.archive.md`.
 3. Lists uncommitted paths from `git status --porcelain`. It never amends or pushes. It commits only if you explicitly ask in that same turn, only the files you confirm, without running git hooks, and never pushes. Without git it says so and still writes `STATE.md`.
 4. Never writes tokens, passwords, keys or personal data into `STATE.md`. Runs gitleaks, trufflehog or detect-secrets on `STATE.md` only if one is already installed on your machine; it never runs scripts from the repository or git hooks.
 5. Closes in one short block, in your language, with the single next action.

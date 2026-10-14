@@ -11,7 +11,8 @@ It adds emphasis. It does not replace the next action.
 
 1. Find one STATE.md, in this order: a path or package the user names, then
    a package whose files this session edited, then the current directory.
-   If more than one exists and the user did not name one, list them and ask. If there is none, say so and stop. Do not create STATE.md.
+   If more than one exists and the user did not name one, list them and ask.
+   If there is none, say so and stop. Do not create STATE.md.
    Suggest `/wrap` when they end this session.
 2. Read it fully before exploring the code. Do not re-derive anything listed
    under "Do not re-derive".
