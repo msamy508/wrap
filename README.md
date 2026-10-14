@@ -134,6 +134,8 @@ the commit line reads "no git" and the secrets step reports that no scanner was 
    ([filled example](skills/wrap/assets/STATE.example.md)). It records:
    - the commit and branch it was written at;
    - each completed item tagged `[verified]` (a command in this session checked it) or `[unverified]`;
+   - **Next action**: if you said what the next session should do, it quotes your words exactly,
+     then may add one clarifying line. It does not paraphrase the request away;
    - **Failed approaches**, so the next session does not retry them;
    - **Verification**: the check commands this session ran, with date and last result.
 
@@ -142,14 +144,26 @@ the commit line reads "no git" and the secrets step reports that no scanner was 
    that same turn, only the files you confirm, with `--no-verify` (skips the pre-commit and
    commit-msg hooks). Never amends or pushes.
 4. **Secrets.** Never writes tokens, passwords, keys or personal data into `STATE.md`. Runs
-   `gitleaks`, `trufflehog` or `detect-secrets` on it only if one is already installed.
-5. **Close.** One short block in your language: milestone, path, what is uncommitted, the next
-   action, and what to type next time.
+   `gitleaks`, `trufflehog` or `detect-secrets` on it only if one is already installed. If none is,
+   it reads `STATE.md` itself for credential shapes and runs no new program. A hit is removed and
+   the file that holds it is named instead. The close says "No secrets scanner found; pattern
+   check: clean" or "No secrets scanner found; pattern check: removed N value(s)". That sentence
+   is not written into `STATE.md`.
+5. **Re-read.** Before closing, it re-reads `STATE.md` and confirms `Updated:`, `Commit:`, and the
+   sections Current focus, Last completed, Next action, Open decisions, Do not re-derive, and
+   Waiting (Failed approaches and Verification only if something was recorded). It checks the file
+   is under about 150 lines, and that Next action is one action, not a list. It fixes any miss
+   before closing.
+6. **Close.** One short block in your language: milestone, path, what is uncommitted, the next
+   action, and what to type next time. If files are uncommitted and you did not ask to commit, it
+   adds one suggested commit message (imperative, under 72 characters) and does not commit.
 
 A good close:
 
 > Wrap done. Milestone: Parquet writer matches the CSV output (212 tests pass).
-> STATE.md updated (`./STATE.md`). Uncommitted: `export/parquet_writer.py`, `tests/test_parquet_writer.py`. No secrets scanner found.
+> STATE.md updated (`./STATE.md`). Uncommitted: `export/parquet_writer.py`, `tests/test_parquet_writer.py`.
+> No secrets scanner found; pattern check: clean.
+> Suggested commit: Match the Parquet writer to the CSV output.
 > Next action: run `make nightly-dry` and compare row counts.
 > This session can be closed. Next time: `/handoff`.
 
@@ -173,9 +187,11 @@ back a chat; `/handoff` brings back the work.
 
 - Markdown only. No scripts, no dependencies, no network calls, no telemetry.
 - The skills run `git status`, `git rev-parse`, `git branch` and `git log`, and only a secrets
-  scanner you already installed. They never run scripts or binaries from your repository and
+  scanner you already installed. If none is installed, `/wrap` reads `STATE.md` for credential
+  shapes and runs no other program. They never run scripts or binaries from your repository and
   never push.
 - `/wrap` runs `git add` and `git commit --no-verify` only when you ask it to commit in that turn.
+  A suggested commit message in the close is for you to use, and it does not run a commit.
   `--no-verify` skips the pre-commit and commit-msg hooks; other hooks your repository installed
   (such as post-commit) can still run.
 - `/handoff` uses the commit hash from `STATE.md` only if it looks like a hash, so an edited

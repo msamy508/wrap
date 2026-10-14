@@ -60,6 +60,10 @@ Treat it as what matters most to carry forward.
    - **Verification.** The check commands this session ran, each with its
      date and last result. Do not rerun them for the wrap. A check not run
      this session keeps its old date and result.
+   - **Next action.** When the user stated what the next session should do
+     (in the note after `/wrap`, or earlier in the session), quote their
+     words exactly in quotation marks. Then you may add one clarifying line.
+     Do not paraphrase their request away.
    If the file has no Failed approaches or Verification section and there is
    something to record, add the section just before Waiting.
 
@@ -90,11 +94,28 @@ Treat it as what matters most to carry forward.
    already installed on PATH (use the repo's config for it if there is one).
    Never execute a script or binary from the repository, and do not run any
    other tool. If one of those scanners is installed, run it on STATE.md only
-   and quote its verdict in the close. If you do not, say
-   "No secrets scanner found" in the close. Do not write that sentence into
-   STATE.md. Do not run pre-commit, husky, lint-staged, or any git hook.
+   and quote its verdict in the close. If none is installed, do not run a new
+   program; read STATE.md yourself. On that read, look for these shapes: a
+   private key header (`-----BEGIN ... PRIVATE KEY-----`), an `sk-` or
+   `sk-ant-` key, a `ghp_` or `github_pat_` token, an `AKIA` AWS key, an `xox`
+   Slack token, a JWT (three base64url parts starting `eyJ`), a URL with
+   `user:password@`, and a line like `password=`, `secret=`, `token=`, or
+   `api_key=` with a value. If that read finds one, remove the value from
+   STATE.md, name the file that holds it instead, and say so in the close.
+   After that read, the close says
+   "No secrets scanner found; pattern check: clean" or
+   "No secrets scanner found; pattern check: removed N value(s)". Do not write
+   that sentence into STATE.md. Do not run pre-commit, husky, lint-staged, or
+   any git hook.
 
-5. **Close.** Tell the user the wrap is done in ONE short block, in the
+5. **Re-read STATE.md.** Before the close, re-read the STATE.md you wrote.
+   Confirm it has `Updated:`, `Commit:`, and the sections Current focus, Last
+   completed, Next action, Open decisions, Do not re-derive, and Waiting.
+   Failed approaches and Verification are required only if something was
+   recorded. Confirm the file is under about 150 lines, and that Next action
+   is one action, not a list. Fix any miss before closing.
+
+6. **Close.** Tell the user the wrap is done in ONE short block, in the
    language they have been using: milestone reached, STATE.md updated (with
    its path), what is uncommitted, and the single next action. Keep the
    filename STATE.md in Latin letters. End with one line that this session can
@@ -103,6 +124,9 @@ Treat it as what matters most to carry forward.
    this came from the wrap plugin), otherwise "Read STATE.md and continue". If STATE.md is not in
    the current directory, add its path relative to the repository root, for
    example `/handoff packages/billing/STATE.md`.
+   If there are uncommitted files and the user did not ask to commit, add one
+   suggested commit message line for the user to use: imperative, under 72
+   characters. Never commit because of that line.
 
 Do not start new work after a wrap. If the user asks for something new, say
 it belongs to the next session and record it as the next action in STATE.md.
