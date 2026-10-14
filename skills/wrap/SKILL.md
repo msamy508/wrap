@@ -97,8 +97,9 @@ carry forward.
    language they have been using: milestone reached, STATE.md updated (with
    its path), what is uncommitted, and the single next action. Keep the
    filename STATE.md in Latin letters. End with one line that this session can
-   be closed, and the exact text to type next time: `/handoff` if it is
-   installed, otherwise "Read STATE.md and continue". If STATE.md is not in
+   be closed, and the exact text to type next time: the handoff command
+   under the name it is installed as (`/handoff`, or `/wrap:handoff` when
+   this came from the wrap plugin), otherwise "Read STATE.md and continue". If STATE.md is not in
    the current directory, add its path relative to the repository root, for
    example `/handoff packages/billing/STATE.md`.
 
