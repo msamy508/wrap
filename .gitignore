@@ -1,0 +1,6 @@
+# Skill archives built for claude.ai upload
+*.zip
+
+# OS files
+.DS_Store
+Thumbs.db
