@@ -123,7 +123,8 @@ tar.exe -a -c -f handoff.zip -C skills handoff
 ```
 
 On claude.ai there is no git checkout unless that chat has the project files and code execution, so
-the commit line reads "no git" and the secrets step reports that no scanner was found.
+the commit line reads "no git" and the secrets step reports that no scanner was found,
+then the pattern-check result.
 
 ## What `/wrap` does
 
@@ -134,8 +135,9 @@ the commit line reads "no git" and the secrets step reports that no scanner was 
    ([filled example](skills/wrap/assets/STATE.example.md)). It records:
    - the commit and branch it was written at;
    - each completed item tagged `[verified]` (a command in this session checked it) or `[unverified]`;
-   - **Next action**: if you said what the next session should do, it quotes your words exactly,
-     then may add one clarifying line. It does not paraphrase the request away;
+   - **Next action**: if you said what the next session should do, it keeps your quote whole, then
+     one clarifying line names the first step. A secret or personal data in that quote is removed;
+     the rest stays;
    - **Failed approaches**, so the next session does not retry them;
    - **Verification**: the check commands this session ran, with date and last result.
 
@@ -143,20 +145,26 @@ the commit line reads "no git" and the secrets step reports that no scanner was 
 3. **Loose ends.** Lists uncommitted paths from `git status --porcelain`. Commits only if you ask in
    that same turn, only the files you confirm, with `--no-verify` (skips the pre-commit and
    commit-msg hooks). Never amends or pushes.
-4. **Secrets.** Never writes tokens, passwords, keys or personal data into `STATE.md`. Runs
-   `gitleaks`, `trufflehog` or `detect-secrets` on it only if one is already installed. If none is,
-   it reads `STATE.md` itself for credential shapes and runs no new program. A hit is removed and
-   the file that holds it is named instead. The close says "No secrets scanner found; pattern
-   check: clean" or "No secrets scanner found; pattern check: removed N value(s)". That sentence
-   is not written into `STATE.md`.
-5. **Re-read.** Before closing, it re-reads `STATE.md` and confirms `Updated:`, `Commit:`, and the
-   sections Current focus, Last completed, Next action, Open decisions, Do not re-derive, and
-   Waiting (Failed approaches and Verification only if something was recorded). It checks the file
-   is under about 150 lines, and that Next action is one action, not a list. It fixes any miss
-   before closing.
-6. **Close.** One short block in your language: milestone, path, what is uncommitted, the next
-   action, and what to type next time. If files are uncommitted and you did not ask to commit, it
-   adds one suggested commit message (imperative, under 72 characters) and does not commit.
+4. **Re-read.** Before the secrets check, it re-reads `STATE.md` and confirms `Updated:` and
+   `Commit:`. A file created this turn also needs Current focus, Last completed, Next action, Open
+   decisions, Do not re-derive, and Waiting (Failed approaches and Verification only if something
+   was recorded). An existing file keeps its headings. Each fact needs a home under them, and no
+   heading is added just to pass the check. It stays under about 150 lines. The clarifying line,
+   or the Next action text when there is no quote, is one action, not a list. It fixes any miss
+   before the secrets check.
+5. **Secrets.** The last edit. It covers `STATE.md` and any `STATE.archive.md` written this turn.
+   It never writes tokens, passwords, keys, or personal data. Reading and editing those files with
+   file tools is allowed. A command other than an installed `gitleaks`, `trufflehog`, or
+   `detect-secrets` is not. A credential value becomes `[removed: see <file that holds it>]`, with
+   nothing of the value kept. Any other secret or personal data inside a quote becomes `[removed]`, and
+   the rest of the quote stays. A scanner hit is removed the same way, and the close says how many
+   values were removed. With no scanner, it reads the files and the close says "No secrets scanner
+   found; pattern check: clean" or "No secrets scanner found; pattern check: removed N value(s)".
+   That sentence is not written into the files.
+6. **Close.** One short block in your language: milestone, path, what is uncommitted, the secrets
+   result, the next action, and what to type next time. If files are uncommitted and you did not
+   ask to commit, it adds one suggested commit message (imperative, under 72 characters) and does
+   not commit.
 
 A good close:
 
@@ -187,9 +195,9 @@ back a chat; `/handoff` brings back the work.
 
 - Markdown only. No scripts, no dependencies, no network calls, no telemetry.
 - The skills run `git status`, `git rev-parse`, `git branch` and `git log`, and only a secrets
-  scanner you already installed. If none is installed, `/wrap` reads `STATE.md` for credential
-  shapes and runs no other program. They never run scripts or binaries from your repository and
-  never push.
+  scanner you already installed. In the secrets step, reading and editing `STATE.md` and
+  `STATE.archive.md` with file tools is allowed. Running a command other than that scanner is not.
+  They never run scripts or binaries from your repository and never push.
 - `/wrap` runs `git add` and `git commit --no-verify` only when you ask it to commit in that turn.
   A suggested commit message in the close is for you to use, and it does not run a commit.
   `--no-verify` skips the pre-commit and commit-msg hooks; other hooks your repository installed

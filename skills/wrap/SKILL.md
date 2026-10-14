@@ -61,8 +61,9 @@ carry forward.
      this session keeps its old date and result.
    - **Next action.** When the user stated what the next session should do
      (in the note after `/wrap`, or earlier in the session), quote their
-     words exactly in quotation marks. Then you may add one clarifying line.
-     Do not paraphrase their request away.
+     words exactly and keep that quote whole. Do not paraphrase their
+     request away. After the quote, one clarifying line names the first
+     step. The secrets rules apply to quoted text like any other text.
    If the file has no Failed approaches or Verification section and there is
    something to record, add the section just before Waiting.
 
@@ -85,44 +86,66 @@ carry forward.
    the repository installed (such as post-commit) can still run. Still do not
    amend or push.
 
-4. **Check secrets.** STATE.md is copied into reviews and later chats. Never
-   write a token, password, key, connection string, cookie, or .env value into
-   it, and do not paste a diff hunk that contains one. Name the file that holds
-   it instead. Leave out private customer or personal data the same way.
+4. **Re-read STATE.md.** Before the secrets check, re-read the STATE.md you
+   wrote. Confirm it has `Updated:` and `Commit:`.
+   If you created the file this turn, also confirm the sections Current
+   focus, Last completed, Next action, Open decisions, Do not re-derive, and
+   Waiting. Failed approaches and Verification are required only if something
+   was recorded.
+   If the file already existed, keep its headings. Confirm each fact has a
+   home under those headings. Do not add a heading just to pass this check.
+   Confirm the file is under about 150 lines. Where Next action quotes the
+   user, keep that quote whole and confirm the clarifying line is one action.
+   Where there is no quote, confirm the Next action text is one action, not a
+   list. Fix any miss before the secrets check.
+
+5. **Check secrets.** This is the last step that edits STATE.md or
+   STATE.archive.md. It covers STATE.md and any STATE.archive.md written
+   this turn. STATE.md is copied into reviews and later chats. Never write a
+   token, password, key, connection string, cookie, or .env value into it,
+   and do not paste a diff hunk that contains one. Leave out private
+   customer or personal data the same way.
+   The secrets rules apply to quoted text like any other text. Keep the rest
+   of a quote. Replace a credential value, in a quote or elsewhere, with
+   `[removed: see <file that holds it>]`, and keep nothing of the value (no
+   prefix such as `ghp_` or `sk-`). Replace any other secret or personal data
+   in a quote with `[removed]`.
+   Reading and editing STATE.md and STATE.archive.md with your file tools is
+   allowed in this step. Running a command other than the installed scanner
+   is not. Never execute a script or binary from the repository. Do not run
+   pre-commit, husky, lint-staged, or any git hook.
    Run only a `gitleaks`, `trufflehog`, or `detect-secrets` program that is
-   already installed on PATH (use the repo's config for it if there is one).
-   Never execute a script or binary from the repository, and do not run any
-   other tool. If one of those scanners is installed, run it on STATE.md only
-   and quote its verdict in the close. If none is installed, do not run a new
-   program; read STATE.md yourself. On that read, look for these shapes: a
-   private key header (`-----BEGIN ... PRIVATE KEY-----`), an `sk-` or
-   `sk-ant-` key, a `ghp_` or `github_pat_` token, an `AKIA` AWS key, an `xox`
-   Slack token, a JWT (three base64url parts starting `eyJ`), a URL with
-   `user:password@`, and a line like `password=`, `secret=`, `token=`, or
-   `api_key=` with a value. If that read finds one, remove the value from
-   STATE.md, name the file that holds it instead, and say so in the close.
-   After that read, the close says
+   already installed on PATH (use the repo's config for it if there is one),
+   and run it on the files this step covers, not on the rest of the
+   repository. If one is installed, each value it reports gets that same
+   removal. In the one close block, quote its verdict and say how many values
+   were removed.
+   If none is installed, do not run a new program. Read those files yourself.
+   On that read, look for these shapes: a private key header
+   (`-----BEGIN ... PRIVATE KEY-----`); `sk-` or `sk-ant-` followed by 20 or
+   more letters, digits, `-`, or `_`; `ghp_` followed by 36 letters or
+   digits; `github_pat_` followed by 20 or more letters, digits, or `_`;
+   `AKIA` followed by 16 capitals or digits; `xox` followed by one of `a`,
+   `b`, `p`, `r`, or `s`, then `-`, then more; a JWT of three base64url parts
+   separated by dots, the first starting `eyJ`; a URL with `user:password@`;
+   and a line `password=`, `secret=`, `token=`, or `api_key=` only when the
+   value is a literal. An empty value does not count, nor does a placeholder
+   such as `<...>`, `***`, `none`, `$VAR`, or `${...}`. Count each value
+   once. If that read finds one, replace the value as above. The close says
    "No secrets scanner found; pattern check: clean" or
    "No secrets scanner found; pattern check: removed N value(s)". Do not write
-   that sentence into STATE.md. Do not run pre-commit, husky, lint-staged, or
-   any git hook.
-
-5. **Re-read STATE.md.** Before the close, re-read the STATE.md you wrote.
-   Confirm it has `Updated:`, `Commit:`, and the sections Current focus, Last
-   completed, Next action, Open decisions, Do not re-derive, and Waiting.
-   Failed approaches and Verification are required only if something was
-   recorded. Confirm the file is under about 150 lines, and that Next action
-   is one action, not a list. Fix any miss before closing.
+   that sentence into STATE.md or STATE.archive.md.
 
 6. **Close.** Tell the user the wrap is done in ONE short block, in the
    language they have been using: milestone reached, STATE.md updated (with
-   its path), what is uncommitted, and the single next action. Keep the
-   filename STATE.md in Latin letters. End with one line that this session can
-   be closed, and the exact text to type next time: the handoff command
-   under the name it is installed as (`/handoff`, or `/wrap:handoff` when
-   this came from the wrap plugin), otherwise "Read STATE.md and continue". If STATE.md is not in
-   the current directory, add its path relative to the repository root, for
-   example `/handoff packages/billing/STATE.md`.
+   its path), what is uncommitted, the secrets result, and the single next
+   action. Keep the filename STATE.md in Latin letters. End with one line
+   that this session can be closed, and the exact text to type next time: the
+   handoff command under the name it is installed as (`/handoff`, or
+   `/wrap:handoff` when this came from the wrap plugin), otherwise
+   "Read STATE.md and continue". If STATE.md is not in the current directory,
+   add its path relative to the repository root, for example
+   `/handoff packages/billing/STATE.md`.
    If there are uncommitted files and the user did not ask to commit, add one
    suggested commit message line for the user to use: imperative, under 72
    characters. Never commit because of that line.
