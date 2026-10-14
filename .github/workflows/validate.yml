@@ -20,9 +20,11 @@ jobs:
           node-version: 22
       - name: skills CLI finds both skills
         run: |
-          out="$(npx -y skills add . --list 2>&1)"
+          out="$(npx -y skills add . --list 2>&1 | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g')"
           echo "$out"
-          echo "$out" | grep -q 'wrap' && echo "$out" | grep -q 'handoff'
+          for s in wrap handoff; do
+            echo "$out" | grep -Eq "^[^[:alnum:]]+ +$s *$" || { echo "skill $s not listed"; exit 1; }
+          done
       - name: Claude Code plugin and marketplace manifests are valid
         run: npx -y @anthropic-ai/claude-code plugin validate . --strict
       - name: versions agree
@@ -30,6 +32,6 @@ jobs:
           v=$(node -p "require('./.claude-plugin/plugin.json').version")
           m=$(node -p "require('./.claude-plugin/marketplace.json').plugins[0].version")
           test "$v" = "$m"
-          grep -q "version: $v" skills/wrap/SKILL.md
-          grep -q "version: $v" skills/handoff/SKILL.md
+          grep -Fxq "  version: $v" skills/wrap/SKILL.md
+          grep -Fxq "  version: $v" skills/handoff/SKILL.md
           echo "all at $v"

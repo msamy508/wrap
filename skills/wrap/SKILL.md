@@ -46,7 +46,9 @@ carry forward.
    In a new or existing file, keep these current:
    - **Commit line.** Under `Updated:`, write `Commit: <short hash> on
      <branch>` from `git rev-parse --short HEAD` and `git branch
-     --show-current`, or `Commit: no git`. The next `/handoff` compares it
+     --show-current`. Write `on (detached)` if the branch is empty,
+     `Commit: none yet` if the repository has no commits, and
+     `Commit: no git` outside a repository. The next `/handoff` compares it
      with the checkout to see what changed since the wrap.
    - **Verified or not.** End each new "Last completed" entry with
      `[verified]` if a command run in this session checked it (a test, a
@@ -61,7 +63,8 @@ carry forward.
    something to record, add the section just before Waiting.
 
    Keep the file under about 150 lines. If it would grow past that, move the
-   oldest "Last completed" entries into `STATE.archive.md` beside it (newest
+   oldest "Last completed" entries, Failed approaches that no longer apply,
+   and old Verification lines into `STATE.archive.md` beside it (newest
    first) and leave a one-line pointer. If `STATE.archive.md` already exists,
    add to it; do not overwrite it. STATE.md holds the current state, not the
    whole history, so the next session reads it INSTEAD of re-deriving context.
@@ -73,8 +76,10 @@ carry forward.
    relative to the repository root (never an absolute path).
    Do not stage, commit, amend, or push. If the user explicitly asks to commit
    in this turn, stage only the paths the user confirms, never a file that
-   holds a secret or a .env value, and run `git commit --no-verify` so no git
-   hook runs. Still do not amend or push.
+   holds a secret or a .env value, and run `git commit --no-verify`. That
+   skips the pre-commit and commit-msg hooks; tell the user that other hooks
+   the repository installed (such as post-commit) can still run. Still do not
+   amend or push.
 
 4. **Check secrets.** STATE.md is copied into reviews and later chats. Never
    write a token, password, key, connection string, cookie, or .env value into

@@ -139,7 +139,8 @@ the commit line reads "no git" and the secrets step reports that no scanner was 
 
    It stays under about 150 lines; older entries move to `STATE.archive.md`.
 3. **Loose ends.** Lists uncommitted paths from `git status --porcelain`. Commits only if you ask in
-   that same turn, only the files you confirm, without git hooks. Never amends or pushes.
+   that same turn, only the files you confirm, with `--no-verify` (skips the pre-commit and
+   commit-msg hooks). Never amends or pushes.
 4. **Secrets.** Never writes tokens, passwords, keys or personal data into `STATE.md`. Runs
    `gitleaks`, `trufflehog` or `detect-secrets` on it only if one is already installed.
 5. **Close.** One short block in your language: milestone, path, what is uncommitted, the next
@@ -172,8 +173,13 @@ back a chat; `/handoff` brings back the work.
 
 - Markdown only. No scripts, no dependencies, no network calls, no telemetry.
 - The skills run `git status`, `git rev-parse`, `git branch` and `git log`, and only a secrets
-  scanner you already installed. They never run scripts or binaries from your repository, never
-  run git hooks, and never push.
+  scanner you already installed. They never run scripts or binaries from your repository and
+  never push.
+- `/wrap` runs `git add` and `git commit --no-verify` only when you ask it to commit in that turn.
+  `--no-verify` skips the pre-commit and commit-msg hooks; other hooks your repository installed
+  (such as post-commit) can still run.
+- `/handoff` uses the commit hash from `STATE.md` only if it looks like a hash, so an edited
+  `STATE.md` cannot pass options to `git`.
 - `/wrap` never edits your settings, `CLAUDE.md`, or any file other than `STATE.md` and
   `STATE.archive.md`.
 - Every push runs [validate](.github/workflows/validate.yml): the Skills CLI must list both skills,
